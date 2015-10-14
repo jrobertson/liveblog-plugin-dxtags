@@ -50,7 +50,7 @@ class LiveBlogPluginDxTags
     pxfilepath = File.join(@todays_filepath, 'tags-seealso.xml')
     px = Polyrex.new pxfilepath
     px.create.tag( label: hashtag) {|create| recs.each {|h| create.entry h} }
-    px.save pxfilepath, pretty: true
+    px.save options: {pretty: true}
     
   end   
   
