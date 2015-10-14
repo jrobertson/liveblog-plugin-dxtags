@@ -74,7 +74,7 @@ class LiveBlogPluginDxTags
 
             xml.ul do
 
-              r.records.each do |record|
+              r.records.reverse.take(3).each do |record|
 
                 xml.li do
                   xml.a({href: record.url}, record.title)

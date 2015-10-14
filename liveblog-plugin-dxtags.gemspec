@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name = 'liveblog-plugin-dxtags'
-  s.version = '0.2.2'
+  s.version = '0.2.3'
   s.summary = 'A LiveBlog plugin which creates or updates the hashtags lookup files from the previous days entries.'
   s.authors = ['James Robertson']
   s.files = Dir['lib/liveblog-plugin-dxtags.rb']
