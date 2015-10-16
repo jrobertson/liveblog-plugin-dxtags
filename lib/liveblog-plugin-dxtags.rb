@@ -10,21 +10,25 @@ class LiveBlogPluginDxTags
 
   def initialize(settings: {}, variables: {})
     
+    @tag_xsltpath = settings[:tag_xslt_path]
     @parent_filepath = variables[:filepath]
     @todays_filepath = variables[:todays_filepath]
+    @urlbase = variables[:urlbase]
     
   end
 
   def on_new_day(filepath, urlpath)
     
-    DynarexTags.new(@parent_filepath).generate(filepath) do |section|
+    dxt = DynarexTags.new(@parent_filepath, tagfile_xslt: @tag_xsltpath)
+    
+    dxt.generate(filepath) do |section|
 
       title = section.x.lines.first
 
       title.scan(/\B#(\w+)(?=\s|$)/).map do |x|
         
         hashtag = x.first
-        [hashtag, title.sub(/#\s+/,''), urlpath + '#' + hashtag]
+        [hashtag, title.sub(/#\s+/,''), @urlbase + urlpath + '#' + hashtag]
       end
 
     end    
@@ -42,15 +46,25 @@ class LiveBlogPluginDxTags
         
     filepath = File.join(@parent_filepath, 'tags', hashtag + '.xml')
 
-    return unless File.exists?  filepath
+    if File.exists?  filepath then
 
-    dx = Dynarex.new filepath
-    recs = dx.to_h
+      dx = Dynarex.new filepath
+      recs = dx.to_h
+      
+      pxfilepath = File.join(@todays_filepath, 'tags-seealso.xml')
+      px = Polyrex.new pxfilepath
+      px.create.tag( label: hashtag) {|create| recs.each {|h| create.entry h} }
+      px.save options: {pretty: true}
     
-    pxfilepath = File.join(@todays_filepath, 'tags-seealso.xml')
-    px = Polyrex.new pxfilepath
-    px.create.tag( label: hashtag) {|create| recs.each {|h| create.entry h} }
-    px.save options: {pretty: true}
+    else
+      
+      # add a Dynarex file in the tags directory 
+      dx = Dynarex.new 'items/item(title,url)'
+      dx.xslt = @tags_xsltpath if @tags_xsltpath
+      
+      url = File.join(@urlbase, @todays_filepath)
+      dx.create title: raw_entry.sub(/#\s+/,''), url: url      
+      dx.save filepath
     
   end   
   
