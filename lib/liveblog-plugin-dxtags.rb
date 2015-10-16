@@ -9,7 +9,7 @@ require 'dynarex-tags'
 class LiveBlogPluginDxTags
 
   def initialize(settings: {}, variables: {})
-    
+
     @tag_xsltpath = settings[:tag_xslt_path]
     @parent_filepath = variables[:filepath]
     @todays_filepath = variables[:todays_filepath]
@@ -34,7 +34,7 @@ class LiveBlogPluginDxTags
     end    
     
     return unless @todays_filepath
-    
+
     px = Polyrex.new 'tags/tag[label]/entry[title, url]'
     px.save File.join(@todays_filepath, 'tags-seealso.xml')
     
@@ -65,6 +65,7 @@ class LiveBlogPluginDxTags
       url = File.join(@urlbase, @todays_filepath)
       dx.create title: raw_entry.sub(/#\s+/,''), url: url      
       dx.save filepath
+    end
     
   end   
   
