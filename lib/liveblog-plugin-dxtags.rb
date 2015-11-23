@@ -18,7 +18,7 @@ class LiveBlogPluginDxTags
   end
 
   def on_new_day(filepath, urlpath)
-    
+
     dxt = DynarexTags.new(@parent_filepath, tagfile_xslt: @tag_xsltpath)
     
     dxt.generate(filepath) do |section|
@@ -41,6 +41,38 @@ class LiveBlogPluginDxTags
   end
   
   def on_new_section(raw_entry, hashtag)
+    
+    # check the pxtags file (if it exists) for a matching hashtag
+    
+    pxtagsfilepath = File.join(@parent_filepath, 'pxtags.xml')
+    
+    
+    if File.exists? pxtagsfilepath then
+      
+      doc = Rexle.new File.read(pxtagsfilepath)
+      tags = doc.root.xpath("//tag[.='#{hashtag}']/text()").uniq
+
+      tags.each do |tag|
+
+        filepath = File.join(@parent_filepath, 'tags', tag + '.xml')
+
+        if File.exists?  filepath then
+
+          dx = Dynarex.new filepath
+          recs = dx.to_h
+                    
+          pxfilepath = File.join(@todays_filepath, 'tags-seealso.xml')
+          px = Polyrex.new pxfilepath
+          px.create.tag( label: hashtag) {|create| recs.each {|h| create.entry h} }
+          px.save options: {pretty: true}
+          
+        end
+        
+      end
+      
+      return if tags.any?
+
+    end
     
     # check the dxtags file for any matching hashtags
         
