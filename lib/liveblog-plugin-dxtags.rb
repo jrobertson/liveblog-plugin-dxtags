@@ -19,6 +19,11 @@ class LiveBlogPluginDxTags
 
   def on_new_day(filepath, urlpath)
 
+    px = Polyrex.new 'tags/tag[label]/entry[title, url]'
+    px.save File.join(@todays_filepath, 'tags-seealso.xml')
+    
+    return unless File.exists? filepath
+
     dxt = DynarexTags.new(@parent_filepath, tagfile_xslt: @tag_xsltpath)
     
     dxt.generate(filepath) do |section|
@@ -34,9 +39,6 @@ class LiveBlogPluginDxTags
     end    
     
     return unless @todays_filepath
-
-    px = Polyrex.new 'tags/tag[label]/entry[title, url]'
-    px.save File.join(@todays_filepath, 'tags-seealso.xml')
     
   end
   
@@ -45,23 +47,24 @@ class LiveBlogPluginDxTags
     # check the pxtags file (if it exists) for a matching hashtag
     
     pxtagsfilepath = File.join(@parent_filepath, 'pxtags.xml')
-    
+    pxfilepath = File.join(@todays_filepath, 'tags-seealso.xml')           
     
     if File.exists? pxtagsfilepath then
       
       doc = Rexle.new File.read(pxtagsfilepath)
-      tags = doc.root.xpath("//tag[.='#{hashtag}']/text()").uniq
+      tags = doc.root.xpath("//tag[*='#{hashtag}']/text()").uniq
 
       tags.each do |tag|
 
         filepath = File.join(@parent_filepath, 'tags', tag + '.xml')
+ 
 
-        if File.exists?  filepath then
+        if File.exists?  filepath and File.exists?  pxfilepath  then
 
           dx = Dynarex.new filepath
           recs = dx.to_h
                     
-          pxfilepath = File.join(@todays_filepath, 'tags-seealso.xml')
+
           px = Polyrex.new pxfilepath
           px.create.tag( label: hashtag) {|create| recs.each {|h| create.entry h} }
           px.save options: {pretty: true}
@@ -73,17 +76,16 @@ class LiveBlogPluginDxTags
       return if tags.any?
 
     end
-    
+
     # check the dxtags file for any matching hashtags
         
     filepath = File.join(@parent_filepath, 'tags', hashtag + '.xml')
 
-    if File.exists?  filepath then
+    if File.exists?  filepath and File.exists? pxfilepath then
 
       dx = Dynarex.new filepath
       recs = dx.to_h
       
-      pxfilepath = File.join(@todays_filepath, 'tags-seealso.xml')
       px = Polyrex.new pxfilepath
       px.create.tag( label: hashtag) {|create| recs.each {|h| create.entry h} }
       px.save options: {pretty: true}
@@ -97,7 +99,7 @@ class LiveBlogPluginDxTags
       url = File.join(@urlbase, @todays_filepath)
       dx.create title: raw_entry.sub(/#\s+/,''), url: url      
       dx.save filepath
-    end
+    end    
     
   end   
   
@@ -139,6 +141,5 @@ class LiveBlogPluginDxTags
     end
     
   end
-  
   
 end
