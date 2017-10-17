@@ -6,6 +6,14 @@ require 'polyrex'
 require 'dynarex-tags'
 
 
+# description:
+
+# The liveblog-plugin-dxtags gem helps create a list of related liveblog 
+# articles for a specific liveblog entry. If we had a liveblog entry titl 
+# "# I am replacing a bath plug #diy", the 3 most recent entries tagged as #diy
+# would appear in the *see also* list underneath the liveblog entry 
+# on the web page
+
 class LiveBlogPluginDxTags
 
   def initialize(settings: {}, variables: {})
@@ -17,13 +25,23 @@ class LiveBlogPluginDxTags
     
   end
 
+  # triggered when tomorrow's date is now today's date
+  # parameters:
+  #   filepath: the index filpath for yesterday's liveblog entry 
+  #              e.g. jamesrobertson.eu/liveblog/2017/oct/16/index.xml
+  #   urlpath: the URL path for yesterday's liveblog entry
+  #              e.g. jamesrobertson.eu/liveblog/2017/oct/16/
+  
   def on_new_day(filepath, urlpath)
 
+    # create a new tags-seealso.xml file inside today's file directory
     px = Polyrex.new 'tags/tag[label]/entry[title, url]'
     px.save File.join(@todays_filepath, 'tags-seealso.xml')
     
     return unless File.exists? filepath
 
+    # opens the master file for all the liveblog tags
+    # e.g. jamesrobertson.eu/liveblog/dxtags.xml
     dxt = DynarexTags.new(@parent_filepath, tagfile_xslt: @tag_xsltpath)
     
     dxt.generate(filepath) do |section|
@@ -141,5 +159,6 @@ class LiveBlogPluginDxTags
     end
     
   end
+  
   
 end
