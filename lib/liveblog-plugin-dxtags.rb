@@ -34,9 +34,7 @@ class LiveBlogPluginDxTags
   
   def on_new_day(filepath, urlpath)
 
-    # create a new tags-seealso.xml file inside today's file directory
-    px = Polyrex.new 'tags/tag[label]/entry[title, url]'
-    px.save File.join(@todays_filepath, 'tags-seealso.xml')
+    px = create_tags_seealso(@todays_filepath)    
     
     return unless File.exists? filepath
 
@@ -124,7 +122,9 @@ class LiveBlogPluginDxTags
   def on_doc_update(doc)
     
     pxfilepath = File.join(@todays_filepath, 'tags-seealso.xml')
-    px = Polyrex.new pxfilepath
+    
+    px =  File.exists?(pxfilepath) ?  Polyrex.new(pxfilepath) : \
+        create_tags_seealso(@todays_filepath)    
     
     doc.root.xpath('records/section').each do |node|
 
@@ -160,5 +160,16 @@ class LiveBlogPluginDxTags
     
   end
   
+  private
+  
+  # create a new tags-seealso.xml file inside today's file directory
+  #
+  def create_tags_seealso(todays_filepath)
+        
+    px = Polyrex.new 'tags/tag[label]/entry[title, url]'
+    px.save File.join(todays_filepath, 'tags-seealso.xml')    
+    px
+    
+  end  
   
 end
