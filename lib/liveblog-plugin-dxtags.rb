@@ -78,7 +78,7 @@ class LiveBlogPluginDxTags
         if File.exists?  filepath and File.exists?  pxfilepath  then
 
           dx = Dynarex.new filepath
-          recs = dx.to_h
+          recs = dx.to_a
                     
 
           px = Polyrex.new pxfilepath
@@ -100,7 +100,7 @@ class LiveBlogPluginDxTags
     if File.exists?  filepath and File.exists? pxfilepath then
 
       dx = Dynarex.new filepath
-      recs = dx.to_h
+      recs = dx.to_a
       
       px = Polyrex.new pxfilepath
       px.create.tag( label: hashtag) {|create| recs.each {|h| create.entry h} }
